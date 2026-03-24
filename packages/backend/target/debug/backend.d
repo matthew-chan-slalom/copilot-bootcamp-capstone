@@ -1,0 +1,1 @@
+/Users/matthew.chan/Workspace/2026/slalom-ai-bootcamp/copilot-bootcamp-capstone/packages/backend/target/debug/backend: /Users/matthew.chan/Workspace/2026/slalom-ai-bootcamp/copilot-bootcamp-capstone/packages/backend/src/main.rs
