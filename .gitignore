@@ -1,3 +1,5 @@
+# >>> frontend <<<
+
 # Dependencies
 node_modules/
 
@@ -11,3 +13,9 @@ node_modules/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# >>> backend <<<
+
+# Rust
+target/
+Cargo.lock  # Only if this is a binary; track it for libraries
