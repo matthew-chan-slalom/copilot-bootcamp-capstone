@@ -1,6 +1,6 @@
 # Copilot Instructions
 
-This file contains foundational principles, workflows, and core project conventions for the Copilot Bootcamp Capstone project.
+This file contains foundational principles, workflows, and core project conventions for the Cookbook.
 
 ## Project Overview
 

@@ -1,2 +1,10 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+	import * as Sidebar from "$lib/components/ui/sidebar";
+	import MainContent from "$lib/components/Main.svelte";
+	import AppSidebar from "$lib/components/Sidebar.svelte";
+</script>
+
+<Sidebar.Provider>
+	<AppSidebar />
+	<MainContent />
+</Sidebar.Provider>
