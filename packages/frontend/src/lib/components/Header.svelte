@@ -7,7 +7,7 @@
 	let focused = $state(false);
 </script>
 
-<header class="flex flex-col gap-4 border-b px-6 py-4">
+<header class="sticky top-0 z-10 flex flex-col gap-4 border-b bg-background px-6 py-4">
 	<div class="flex items-center gap-4">
 		<Sidebar.Trigger />
 		<h1 class="flex-1 text-center text-xl font-semibold">Whisk & Wish</h1>

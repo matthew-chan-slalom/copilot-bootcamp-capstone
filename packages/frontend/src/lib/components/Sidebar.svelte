@@ -1,11 +1,14 @@
 <script lang="ts">
 	import * as Sidebar from "$lib/components/ui/sidebar";
-	import { Home, Settings, Users, Plus } from "@lucide/svelte";
+	import { Home, Settings, Users, Plus, UtensilsCrossed } from "@lucide/svelte";
 </script>
 
 <Sidebar.Root>
 	<Sidebar.Header>
-		<h2 class="px-4 py-2 text-lg font-semibold">Whisk & Wish</h2>
+		<h2 class="flex items-center gap-2 px-4 py-2 text-lg font-semibold">
+			<UtensilsCrossed class="h-5 w-5" />
+			Whisk & Wish
+		</h2>
 	</Sidebar.Header>
 	<Sidebar.Content>
 		<Sidebar.Group>
