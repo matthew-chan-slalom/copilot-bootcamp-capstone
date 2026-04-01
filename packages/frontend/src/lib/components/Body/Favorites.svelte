@@ -4,15 +4,13 @@
 	import { dndzone } from "svelte-dnd-action";
 	import type { Recipe } from "$lib/models/recipes.interface";
 
-	let { favorites = $bindable() }: { favorites: Recipe[] } = $props();
-
-	function handleConsider(e: CustomEvent) {
-		favorites = e.detail.items;
+	interface Props {
+		favorites: Recipe[];
+		handleConsider: (e: CustomEvent) => void;
+		handleFinalize: (e: CustomEvent) => void;
 	}
 
-	function handleFinalize(e: CustomEvent) {
-		favorites = e.detail.items;
-	}
+	let { favorites, handleConsider, handleFinalize }: Props = $props();
 </script>
 
 <section>

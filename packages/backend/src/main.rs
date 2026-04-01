@@ -62,7 +62,7 @@ async fn seed_database(db: &sled::Db) {
     }
     
     // Load recipes from JSON file
-    let recipes_json = include_str!("../../frontend/src/resources/recipes.json");
+    let recipes_json = include_str!("resources/recipes.json");
     let recipes: Vec<Recipe> = serde_json::from_str(recipes_json)
         .expect("Failed to parse recipes.json");
     

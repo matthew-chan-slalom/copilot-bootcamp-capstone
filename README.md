@@ -1,4 +1,124 @@
-# copilot-bootcamp-capstone
+# Recipe App
+
+> Full-stack recipe management application built with Svelte 5 and Rust
+
+A modern web application for browsing, organizing, and managing recipes. Features drag-and-drop organization, favorites management, and a clean responsive interface.
+
+## Tech Stack
+
+- **Frontend**: SvelteKit + Svelte 5 (TypeScript, Tailwind CSS)
+- **Backend**: Rust + Axum + Sled (embedded NoSQL database)
+- **UI Components**: shadcn-svelte
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- Rust 1.70+
+
+### Run Locally
+
+**Backend** (Terminal 1):
+```bash
+cd packages/backend
+cargo run
+```
+
+**Frontend** (Terminal 2):
+```bash
+cd packages/frontend
+npm install
+npm run dev
+```
+
+Open **http://localhost:5173** in your browser.
+
+## Documentation
+
+📚 **[Complete Documentation →](./docs/README.md)**
+
+| Documentation | Description |
+|--------------|-------------|
+| [Architecture](./docs/architecture.md) | System design, data flow, and key decisions |
+| [API Reference](./docs/api.md) | Backend endpoints and usage |
+| [Frontend Guide](./docs/frontend-guide.md) | Svelte 5 patterns and component structure |
+| [Development Guide](./docs/development.md) | How to run, build, and deploy |
+| [Teacher Logs](./docs/teacher-logs.md) | Implementation history and rationale |
+| [Coding Guidelines](./docs/coding-guideline.md) | Code standards and conventions |
+
+## Features
+
+- ✅ Browse recipes with card-based UI
+- ✅ Mark favorites for quick access
+- ✅ Drag-and-drop recipe organization
+- ✅ Search functionality
+- ✅ Add new recipes via slide-in drawer
+- ✅ REST API with persistent storage
+- ✅ Full TypeScript type safety
+
+## Project Structure
+
+```
+copilot-bootcamp-capstone/
+├── docs/                    # 📚 Documentation
+├── packages/
+│   ├── backend/            # 🦀 Rust API (Axum + Sled)
+│   └── frontend/           # 💻 Svelte 5 app (SvelteKit)
+├── .github/                # GitHub Copilot agents
+└── README.md              # This file
+```
+
+## Development
+
+See the [Development Guide](./docs/development.md) for detailed instructions.
+
+**Quick commands**:
+
+```bash
+# Backend
+cd packages/backend
+cargo run              # Run server
+cargo test             # Run tests
+cargo clippy           # Lint
+
+# Frontend
+cd packages/frontend
+npm run dev            # Dev server
+npm run check          # Type check
+npm run lint           # Lint
+npm test               # Run tests
+```
+
+## API Endpoints
+
+- `GET /recipes` - Get all recipes
+- `POST /recipes` - Create a recipe
+
+See [API Documentation](./docs/api.md) for details.
+
+## Learning Resources
+
+- [Svelte 5 Documentation](https://svelte.dev/docs/svelte/overview)
+- [Axum Documentation](https://docs.rs/axum/)
+- [Teacher Logs](./docs/teacher-logs.md) - In-depth explanations of implementation details
+
+## Contributing
+
+1. Read the [Coding Guidelines](./docs/coding-guideline.md)
+2. Review the [Architecture](./docs/architecture.md)
+3. Make your changes
+4. Run linters and type checks
+5. Update documentation if needed
+
+## License
+
+See [LICENSE](./LICENSE)
+
+---
+
+*For complete documentation, visit [docs/README.md](./docs/README.md)*
+
 
 ## Intro
 Teacher and Documentation Agent. This capstone project expand on the concepts learned in Session 5.
@@ -79,11 +199,36 @@ Preferred model: Claude Sonnet 4.5 (copilot)
 
 Format as a teacher.agent.md file ready to save in .github/agents/
 
-## Explanding on Documentation Agent
+## Expanding on Documentation Agent
 
+You can use the copilot-customization agent and the instructions below to generate your documentation agent.
 
+Create a custom Copilot agent that reads `docs/teacher-logs.md` and intelligently maintains project documentation. Implement this as a slash command: `/doc`
 
-## Future enhancements
+The mode should:
+- Read teaching session logs and extract key architectural decisions, edge cases, and concepts
+- Decide whether to update existing docs, create new ones, or split/reorganize documentation
+- Maintain documentation standards with proper structure, Mermaid diagrams, tables, and code snippets
+- Keep docs navigable by organizing content by topic (not chronology) and adding cross-references
+- Support flags for different operations:
+  - `--from-logs` — Process new teach-log entries (most common)
+  - `--audit` — Scan existing docs for stale/incorrect content
+  - `--file <path>` — Update a specific documentation file
+  - `--topic <name>` — Consolidate teach-log entries about a topic
+  - `--dry-run` — Preview changes without writing
+- Follow documentation philosophy:
+  - Write for engineers who haven't seen the code before
+  - Short, accurate docs beat long, stale ones
+  - Preserve the "why" behind decisions from teach-logs
+  - Use visualizations only where they clarify
+
+Available tools: "read", "edit", "search", "vscode"
+
+Preferred model: Claude Sonnet 4.5 (copilot)
+
+Format as a documentation.agent.md file ready to save in .github/agents/
+
+## Future Enhancements
 
 - The teacher and documentation agents can be automated on hooks, commit hooks, save hooks, etc
 - Hook into PR's and paste the teacher's lesson into the PR readme section itself. Any engineer looking at these PR will have a full explanation of the diff.

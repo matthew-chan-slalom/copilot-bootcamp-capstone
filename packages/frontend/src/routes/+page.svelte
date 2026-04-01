@@ -6,9 +6,19 @@
 	import { setContext } from "svelte";
 
 	let drawerOpen = $state(false);
+	let searchQuery = $state("");
 
 	setContext("openDrawer", () => {
 		drawerOpen = true;
+	});
+
+	setContext("searchQuery", {
+		get value() {
+			return searchQuery;
+		},
+		set value(newValue: string) {
+			searchQuery = newValue;
+		}
 	});
 </script>
 

@@ -4,6 +4,7 @@ This file contains logs of all teaching sessions from the `/teach` agent. Each l
 
 ## Table of Contents
 
+- [2026-03-31 16:30 - Frontend - Real-Time Recipe Search with Reactive Filtering](#2026-03-31-1630---frontend---real-time-recipe-search-with-reactive-filtering)
 - [2026-03-31 15:45 - Frontend - Connecting Frontend to Backend API](#2026-03-31-1545---frontend---connecting-frontend-to-backend-api)
 - [2026-03-31 14:30 - Backend - Rust REST API with Axum and Sled](#2026-03-31-1430---backend---rust-rest-api-with-axum-and-sled)
 - [2026-03-29 17:00 - Frontend - Blur/Click Race Condition Fix](#2026-03-29-1700---frontend---blurclick-race-condition-fix)
@@ -1716,6 +1717,383 @@ Before you move on, make sure you can answer these:
 ---
 
 **You're ready to move on when you can confidently answer the check-in questions.**
+
+---
+
+# [2026-03-31 16:30] [Frontend] Real-Time Recipe Search with Reactive Filtering
+
+**Timestamp:** 2026-03-31 16:30  
+**Category:** Frontend  
+**Summary:** Implementing real-time search functionality that filters recipe cards as the user types, using Svelte context API for state sharing and $derived rune for reactive filtering across Favorites and Recipes sections
+
+---
+
+## Teaching Session: Real-Time Recipe Search with Reactive Filtering
+
+### Lens 1: The What
+
+We just implemented a real-time search feature that filters recipe cards as you type. When you enter text in the search input at the top of the page, both the Favorites section and the Recipes section instantly filter to show only recipes whose titles match your search query. The filtering is case-insensitive and uses substring matching—typing "chick" shows "Chicken Parmesan", "Chicken Tikka Masala", etc. The search state lives in the root layout component and flows down through Svelte's context API to the Header (where you type) and Body (where cards get filtered).
+
+---
+
+### Lens 2: The Why
+
+| Decision Made | Why This Approach | What Was Rejected & Why |
+|---|---|---|
+| Svelte context for state sharing | Avoids prop drilling through multiple component layers, keeps search state accessible to both Header and Body without coupling them | Passing props down through MainContent would create unnecessary coupling; global store would be overkill for single-page state |
+| Getter/setter object in context | Allows two-way binding from Header while keeping reactivity working in Body's $derived | Plain string value wouldn't trigger reactivity properly when modified from different components |
+| $derived rune for filtering | Automatically recomputes filtered arrays when searchQuery changes—no manual effect needed | Using $effect to manually update arrays is more verbose and error-prone; losing Svelte 5's reactive benefits |
+| Filter at Body level, not components | Single source of truth for filtering logic; Favorites and Recipes stay presentational | Duplicating filter logic in both components violates DRY; harder to maintain consistent behavior |
+
+**Code showing the context decision:**
+
+```typescript
+// +page.svelte - Provider sets up the context
+let searchQuery = $state("");
+
+setContext("searchQuery", {
+  get value() {
+    return searchQuery;  // When accessed, returns current value
+  },
+  set value(newValue: string) {
+    searchQuery = newValue;  // When assigned, updates state
+  }
+});
+```
+
+Why this pattern? The getter/setter allows `bind:value={searchContext.value}` in Header to modify the state, while Body's `$derived` automatically reacts to reads.
+
+**Code showing $derived reactivity:**
+
+```typescript
+// Body.svelte - Automatically recomputes when searchContext.value changes
+let filteredItems = $derived(
+  searchContext.value.trim() === ""
+    ? items  // No search → show all
+    : items.filter((recipe) =>
+        recipe.title.toLowerCase().includes(searchContext.value.toLowerCase())
+      )
+);
+```
+
+This is cleaner than:
+
+```typescript
+// OLD APPROACH (Svelte 4 style - don't use)
+$: filteredItems = searchContext.value.trim() === ""
+  ? items
+  : items.filter(...);  // Reactive statement syntax
+```
+
+The `$derived` rune is Svelte 5's explicit, type-safe way to declare derived state. It's more obvious what's happening.
+
+---
+
+### Lens 3: Edge Cases & Assumptions
+
+**ASSUMPTION:** Context is always available when Header and Body mount  
+**RISK:** If component tree structure changes and these components render outside the Provider, `getContext` returns undefined → runtime error
+
+**Code showing the assumption:**
+```typescript
+// Header.svelte and Body.svelte both assume this succeeds
+const searchContext = getContext<{ value: string }>("searchQuery");
+// If context not set, searchContext is undefined ← RUNTIME ERROR when accessing .value
+```
+
+**EDGE CASE:** What happens with very large recipe lists (1000+ items)?  
+→ Current behavior: Filters run on every keystroke; no debouncing  
+→ Is this intentional? For <100 recipes, performance is fine. At scale, consider debouncing:
+
+```typescript
+// POTENTIAL OPTIMIZATION (not implemented):
+import { debounce } from "$lib/utils";
+
+let debouncedSearch = $state("");
+
+const searchContext = getContext<{ value: string }>("searchQuery");
+const debouncedUpdate = debounce((val: string) => debouncedSearch = val, 300);
+
+$effect(() => {
+  debouncedUpdate(searchContext.value);
+});
+
+// Then filter based on debouncedSearch instead
+```
+
+**EDGE CASE:** What if a recipe title is null or undefined?  
+→ Current behavior: `.toLowerCase()` throws TypeError  
+→ Is this intentional? We assume backend always provides valid titles. Add validation if data source is untrusted.
+
+**ASSUMPTION:** Case-insensitive substring matching is sufficient  
+**RISK:** User types "chkn tikka" expecting fuzzy match → no results  
+Current code: `"Chicken Tikka".includes("chkn tikka")` → **false**  
+
+**Data flow diagram:**
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Header
+    participant Context
+    participant Body
+    participant Recipes
+    participant Favorites
+
+    User->>Header: Types in search input
+    Header->>Context: Updates searchQuery.value
+    Context->>Body: $derived detects change
+    Body->>Body: Recomputes filteredItems
+    Body->>Body: Recomputes filteredFavorites
+    Body->>Recipes: Passes filteredItems
+    Body->>Favorites: Passes filteredFavorites
+    Recipes->>User: Shows filtered cards
+    Favorites->>User: Shows filtered cards
+```
+
+---
+
+### Lens 4: Codebase Connection
+
+**WHAT THIS AFFECTS:**
+
+→ `packages/frontend/src/routes/+page.svelte` (modified — added searchQuery state and context provider)  
+→ `packages/frontend/src/lib/components/Header.svelte` (modified — now reads/writes searchQuery via context)  
+→ `packages/frontend/src/lib/components/Body/Body.svelte` (modified — added filteredItems and filteredFavorites derived state)  
+→ `packages/frontend/src/lib/components/Body/Favorites.svelte` (modified — refactored from $bindable to accept filtered favorites as prop)  
+→ `packages/frontend/src/lib/components/Body/Recipes.svelte` (depends on — already accepts items as prop, no changes needed)
+
+**WHAT COULD BREAK IF THIS IS WRONG:**
+
+→ If context key name changes ("searchQuery") but consumers don't update → runtime undefined error  
+→ If Body.svelte filters wrong array (items vs favorites) → wrong cards disappear  
+→ If drag-and-drop modifies filtered arrays instead of source arrays → data loss when search clears
+
+**WHAT THIS DOES NOT AFFECT (but looks like it might):**
+
+→ Drag-and-drop functionality — still operates on source `items` and `favorites` arrays, not filtered ones. Filtered arrays are read-only derived state.  
+→ Backend API — search is entirely client-side; no network requests triggered  
+→ Favorites toggle logic — not implemented yet; search doesn't interfere with future favoriting
+
+**Component hierarchy:**
+
+```
++page.svelte (context provider: searchQuery, openDrawer)
+    │
+    └─▶ MainContent
+            └─▶ Header (consumes: searchQuery, writes to it)
+            └─▶ Body (consumes: searchQuery, derives filtered arrays)
+                    ├─▶ Favorites (receives: filteredFavorites)
+                    └─▶ Recipes (receives: filteredItems)
+```
+
+---
+
+### Lens 5: Concepts to Own
+
+**CONCEPT: Svelte Context API**  
+What it is: A key-value store for passing data down the component tree without props  
+Why it matters here: Lets Header and Body share search state without MainContent knowing about it—decouples unrelated components  
+
+**Code example:**
+```typescript
+// Provider (parent) - sets up context
+setContext("searchQuery", { get value() { return searchQuery }, set value(v) { searchQuery = v } });
+
+// Consumer (any descendant) - retrieves it
+const searchContext = getContext<{ value: string }>("searchQuery");
+// Now Header can write: searchContext.value = "pizza"
+// And Body can read: searchContext.value in $derived
+```
+
+Context is **hierarchical**—only descendants of the provider can access it. Siblings cannot.
+
+---
+
+**CONCEPT: $derived Rune (Svelte 5 Reactivity)**  
+What it is: Declares computed state that automatically updates when dependencies change  
+Why it matters here: When `searchContext.value` changes, `filteredItems` automatically recomputes—no manual tracking needed  
+
+**Code example:**
+```typescript
+let items = $state<Recipe[]>([...]); // Base state
+let searchQuery = $state("");        // Base state
+
+// Derived state - recalculates when items OR searchQuery changes
+let filteredItems = $derived(
+  searchQuery.trim() === ""
+    ? items
+    : items.filter(recipe => recipe.title.toLowerCase().includes(searchQuery.toLowerCase()))
+);
+```
+
+**Comparison with old approach:**
+```typescript
+// Svelte 4 - reactive statement
+$: filteredItems = items.filter(...);  // ← Re-runs when items changes
+
+// Svelte 5 - explicit derived state
+let filteredItems = $derived(items.filter(...));  // ← Same behavior, clearer intent
+```
+
+The difference: `$derived` is a **signal** that tells both the compiler and developers "this value depends on other state."
+
+---
+
+**CONCEPT: Getter/Setter Pattern for Two-Way Binding**  
+What it is: An object with `get` and `set` methods that control access to a value  
+Why it matters here: Allows `bind:value` in Header while keeping reactivity working in Body  
+
+**Code example:**
+```typescript
+// Without getter/setter (doesn't work for two-way binding):
+setContext("searchQuery", searchQuery); // ← Passes string value, not reference
+
+// With getter/setter (works):
+setContext("searchQuery", {
+  get value() { return searchQuery },  // When read, returns current state
+  set value(v) { searchQuery = v }     // When written, updates state
+});
+```
+
+When Header does `bind:value={searchContext.value}`, Svelte:
+1. Reads `searchContext.value` (calls the getter)
+2. On input change, assigns `searchContext.value = newText` (calls the setter)
+3. Setter updates the state, triggering $derived in Body
+
+---
+
+**CONCEPT: Array Filtering with .includes()**  
+What it is: Case-insensitive substring search using JavaScript string methods  
+Why it matters here: Simple, performant for small-to-medium datasets; no external library needed  
+
+**Code example:**
+```typescript
+// The filtering logic broken down:
+const searchTerm = "chick";                    // User typed this
+const recipeTitle = "Chicken Parmesan";       // Recipe in database
+
+// Step 1: Normalize to lowercase for case-insensitive comparison
+const normalizedSearch = searchTerm.toLowerCase();    // "chick"
+const normalizedTitle = recipeTitle.toLowerCase();    // "chicken parmesan"
+
+// Step 2: Check if title contains search term
+const matches = normalizedTitle.includes(normalizedSearch);  // true
+
+// Step 3: Filter array
+items.filter(recipe => recipe.title.toLowerCase().includes(searchTerm.toLowerCase()));
+```
+
+**Trade-offs:**
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| `.includes()` (current) | Simple, fast, no dependencies | Only substring match—no fuzzy matching |
+| Fuzzy library (fuse.js) | Handles typos, ranks results | Adds ~10KB bundle size, overkill for simple search |
+| Backend search | Scalable, can search all fields | Requires API call on every keystroke, latency |
+
+---
+
+**CONCEPT: Derived State vs. Source of Truth**  
+What it is: Distinguishing between base state (source of truth) and computed/filtered views  
+Why it matters here: Drag-and-drop modifies `items`, not `filteredItems`—filtered arrays are read-only views  
+
+**Visualizing the data flow:**
+
+```
+Source State (mutable):
+┌─────────────────┐
+│ items = [A,B,C] │ ← onMount fetches from API
+└────────┬────────┘
+         │
+         │ $derived (read-only)
+         ▼
+┌──────────────────────┐
+│ filteredItems = [A,C]│ ← Computed view based on search
+└──────────────────────┘
+         │
+         ▼
+    <Recipes items={filteredItems} />  ← Displays filtered view
+```
+
+When you drag a recipe, the `handleFinalize` callback modifies `items`, **not** `filteredItems`. The filtered array then automatically recomputes.
+
+---
+
+### Lens 6: Check-In Questions
+
+Before you move on, make sure you can answer these:
+
+1. **What happens if you remove the `.trim()` check in the derived state?**  
+   (Hint: Try typing a single space. What do you expect to see?)
+
+2. **If you wanted to search both recipe titles AND descriptions, where would you change the code?**  
+   (Hint: Look at the filtering logic in Body.svelte)
+
+3. **Why did we pass `filteredFavorites` to the Favorites component instead of letting Favorites do its own filtering?**  
+   (Hint: Think about where the search state lives and the DRY principle)
+
+4. **What would break if you changed the context key from "searchQuery" to "search" in +page.svelte but forgot to update Header.svelte?**  
+   (Hint: Consider what `getContext("search")` would return if the key doesn't exist)
+
+---
+
+### Code Quality Notes
+
+**🟢 MINOR: Consider debouncing for scalability**  
+Where: Body.svelte filtering logic  
+Trade-off: Current implementation filters on every keystroke. For <100 items, this is fine and provides instant feedback.  
+Consider: If recipe list grows to 1000+, add debouncing:
+
+```typescript
+import { debounce } from "$lib/utils";
+
+let debouncedSearch = $state("");
+const debouncedUpdate = debounce((val: string) => debouncedSearch = val, 300);
+
+$effect(() => {
+  debouncedUpdate(searchContext.value);
+});
+
+// Filter based on debouncedSearch instead of searchContext.value
+```
+
+**🟢 MINOR: Add null safety for recipe titles**  
+Where: Body.svelte filter function  
+Trade-off: We assume backend always provides valid titles (which it currently does)  
+Consider: If data source becomes untrusted, add safety:
+
+```typescript
+items.filter((recipe) =>
+  recipe.title?.toLowerCase().includes(searchContext.value.toLowerCase()) ?? false
+)
+```
+
+**🟡 WORTH ADDRESSING: Context could be undefined**  
+Where: Header.svelte and Body.svelte  
+Why this matters: If component tree structure changes, `getContext` might return undefined  
+Fix: Add runtime check:
+
+```typescript
+const searchContext = getContext<{ value: string }>("searchQuery");
+if (!searchContext) {
+  throw new Error("searchQuery context not found. Ensure component is inside Provider.");
+}
+```
+
+Or use optional chaining with fallback:
+
+```typescript
+let filteredItems = $derived(
+  (searchContext?.value ?? "").trim() === ""
+    ? items
+    : items.filter(...)
+);
+```
+
+---
+
+**You're ready to move on when you can confidently answer the check-in questions and explain why we chose Svelte context over props or a global store.**
 
 ---
 

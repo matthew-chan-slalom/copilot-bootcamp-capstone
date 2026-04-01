@@ -4,10 +4,10 @@
 	import { Plus } from "@lucide/svelte";
 	import { getContext } from "svelte";
 
-	let search = $state("");
 	let focused = $state(false);
 
 	const openDrawer = getContext<() => void>("openDrawer");
+	const searchContext = getContext<{ value: string }>("searchQuery");
 
 	function handleBlur() {
 		// Delay blur to allow click events to fire first
@@ -24,7 +24,7 @@
 	</div>
 	<div class="relative w-full">
 		<Command.Root class="rounded-full shadow-none border-0">
-			<Command.Input placeholder="Search recipes..." bind:value={search} onfocus={() => focused = true} onblur={handleBlur} />
+			<Command.Input placeholder="Search recipes..." bind:value={searchContext.value} onfocus={() => focused = true} onblur={handleBlur} />
 			{#if focused}
 				<Command.List>
 					<Command.Empty>
