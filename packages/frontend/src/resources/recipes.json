@@ -1,0 +1,65 @@
+[
+  {
+    "id": 1,
+    "title": "Spaghetti Bolognese",
+    "description": "A classic Italian meat sauce pasta.",
+    "image": "https://loremflickr.com/600/400/spaghetti,bolognese",
+    "isFavorite": false
+  },
+  {
+    "id": 2,
+    "title": "Chicken Tikka Masala",
+    "description": "Creamy tomato-based Indian curry.",
+    "image": "https://loremflickr.com/600/400/chicken,curry",
+    "isFavorite": true
+  },
+  {
+    "id": 3,
+    "title": "Avocado Toast",
+    "description": "A quick and healthy breakfast.",
+    "image": "https://loremflickr.com/600/400/avocado,toast",
+    "isFavorite": false
+  },
+  {
+    "id": 4,
+    "title": "Beef Tacos",
+    "description": "Crispy seasoned beef in soft tortillas.",
+    "image": "https://loremflickr.com/600/400/tacos,beef",
+    "isFavorite": false
+  },
+  {
+    "id": 5,
+    "title": "Banana Pancakes",
+    "description": "Fluffy weekend morning pancakes.",
+    "image": "https://loremflickr.com/600/400/pancakes,banana",
+    "isFavorite": true
+  },
+  {
+    "id": 6,
+    "title": "Margherita Pizza",
+    "description": "Classic Neapolitan pizza with fresh basil.",
+    "image": "https://loremflickr.com/600/400/pizza,margherita",
+    "isFavorite": false
+  },
+  {
+    "id": 7,
+    "title": "Caesar Salad",
+    "description": "Crispy romaine with creamy Caesar dressing.",
+    "image": "https://loremflickr.com/600/400/caesar,salad",
+    "isFavorite": false
+  },
+  {
+    "id": 8,
+    "title": "Beef Ramen",
+    "description": "Rich Japanese noodle soup with tender beef.",
+    "image": "https://loremflickr.com/600/400/ramen,noodle",
+    "isFavorite": false
+  },
+  {
+    "id": 9,
+    "title": "Lemon Cheesecake",
+    "description": "Zesty no-bake cheesecake with a buttery crust.",
+    "image": "https://loremflickr.com/600/400/cheesecake,lemon",
+    "isFavorite": true
+  }
+]

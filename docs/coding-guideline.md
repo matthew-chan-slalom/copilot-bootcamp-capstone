@@ -28,4 +28,13 @@ Use PascalCase for class names
 Good: ApiService, TodoRepository
 Bad: apiService, todo_repository
 
-
+## Code Organization
+Logical Grouping: Group related code together
+Single Responsibility: Each module, component, or function should have a single, well-defined responsibility
+Order of Declaration:
+Imports at the top
+Constants
+Utility functions
+Main component/class
+Helper functions (if any)
+Exports at the bottom

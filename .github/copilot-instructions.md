@@ -1,6 +1,6 @@
 # Copilot Instructions
 
-This file contains foundational principles, workflows, and core project conventions for the Copilot Bootcamp Capstone project.
+This file contains foundational principles, workflows, and core project conventions for the Recipe App.
 
 ## Project Overview
 
@@ -21,6 +21,7 @@ A full-stack application using:
 - **Explore**: Fast read-only codebase exploration and Q&A subagent for researching complex questions
 - **tdd**: Test-Driven Development specialist for writing tests first, implementing code through Red-Green-Refactor cycles, and fixing failing tests
 - **code-review**: Code review and quality improvement specialist for analyzing ESLint/compilation errors, suggesting idiomatic JavaScript/Svelte/Rust patterns, and guiding toward clean maintainable code
+- **teacher**: Teaching agent that explains recent code changes like a senior engineer mentoring a junior, covering decisions, trade-offs, edge cases, and codebase connections after implementation
 
 ## Memory System
 
@@ -63,6 +64,8 @@ For detailed information about the memory system, see [.github/memory/README.md]
 - Rust: Follow Rust conventions and clippy recommendations
 - Svelte: Use SvelteKit conventions
 - Testing: Write clear, descriptive test names and arrange-act-assert structure
+
+For detailed coding standards and conventions, see [docs/coding-guideline.md](../docs/coding-guideline.md).
 
 ## Resources
 
