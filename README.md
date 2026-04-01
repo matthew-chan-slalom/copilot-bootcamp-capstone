@@ -46,6 +46,12 @@ Create a custom Copilot agent for teaching the user about the implementation it 
 The mode should:
 - This teacher agent focuses on writing explanations like a senior engineer teaching a junior engineer
 - Explain the diff and instruct you what it did
+- Add the appropriate code snippets to the explanation
+- Add other visualization as appropriate, 
+  - Diagrams (Mermaid — flowcharts, sequence diagrams, ER diagrams) 
+  - Code snippets (syntax highlighted)
+  - Tables (comparing options, showing data structures)
+  - ASCII art (simple architecture sketches)
 - Explain why that approach was taken
 - Explain what alternatives exists
 - Explain why those alternatives did not work or why they were inferior to the current approach
