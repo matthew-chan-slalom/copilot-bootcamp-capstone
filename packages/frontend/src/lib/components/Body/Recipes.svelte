@@ -2,14 +2,7 @@
 	import * as Card from "$lib/components/ui/card";
 	import { ChefHat } from "@lucide/svelte";
 	import { dndzone } from "svelte-dnd-action";
-
-	interface Recipe {
-		id: number;
-		title: string;
-		description: string;
-		image: string;
-		isFavorite: boolean;
-	}
+	import type { Recipe } from "$lib/models/recipes.interface";
 
 	interface Props {
 		items: Recipe[];

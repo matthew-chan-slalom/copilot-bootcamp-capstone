@@ -1,6 +1,9 @@
 <script lang="ts">
 	import * as Sidebar from "$lib/components/ui/sidebar";
 	import { Home, Settings, Users, Plus, UtensilsCrossed } from "@lucide/svelte";
+	import { getContext } from "svelte";
+
+	const openDrawer = getContext<() => void>("openDrawer");
 </script>
 
 <Sidebar.Root>
@@ -39,7 +42,7 @@
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
 					<Sidebar.MenuItem>
-						<Sidebar.MenuButton>
+						<Sidebar.MenuButton onclick={openDrawer}>
 						<Plus class="h-4 w-4" />
 						<span>Add a Recipe</span>
 						</Sidebar.MenuButton>
