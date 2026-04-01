@@ -2,8 +2,9 @@
 	import * as Card from "$lib/components/ui/card";
 	import { Heart } from "@lucide/svelte";
 	import { dndzone } from "svelte-dnd-action";
+	import type { Recipe } from "$lib/models/recipes.interface";
 
-	let { favorites = $bindable() }: { favorites: { id: number; title: string; description: string; image: string; isFavorite: boolean }[] } = $props();
+	let { favorites = $bindable() }: { favorites: Recipe[] } = $props();
 
 	function handleConsider(e: CustomEvent) {
 		favorites = e.detail.items;

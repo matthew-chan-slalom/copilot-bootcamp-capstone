@@ -399,10 +399,20 @@ Present the teaching session using the selected lenses. Remember:
 
 **Code snippet best practices:**
 - Keep snippets focused (3-15 lines typically)
-- Add comments to highlight key parts
-- Show "before/after" when explaining refactors
+- **Add inline comments to highlight key parts** — Point out important decisions, gotchas, or non-obvious behavior
+- **Use comments to annotate flow** — Number steps (`// 1. First this happens`), mark timing (`// Fires FIRST`), or explain order
+- **Comment the "why" not just the "what"** — Don't comment obvious code; explain reasoning, tradeoffs, or edge cases
+- Show "before/after" when explaining refactors with comments showing what changed
 - Include enough context to understand the snippet
 - Use syntax highlighting with the correct language tag
+
+**When to add comments to code snippets:**
+- Highlighting a specific line that makes a decision ("← This is the key line")
+- Showing event order or timing ("// Fires at ~0ms", "// Runs later")
+- Explaining non-obvious behavior ("// Returns undefined if context not set")
+- Pointing out patterns or anti-patterns ("// Old pattern (don't use)", "// Better approach")
+- Marking important sections in longer snippets ("// The fix begins here")
+- Explaining tradeoffs inline ("// Simpler but slower")
 
 **Visualization best practices:**
 - **Use diagrams for flow and relationships** — If explaining "what calls what" or "what happens when," a diagram is clearer than prose
@@ -421,36 +431,76 @@ Present the teaching session using the selected lenses. Remember:
 
 After delivering the teaching session, **automatically log it** to preserve the knowledge:
 
-1. **Create a summary**
+1. **Create a summary and metadata**
    - Generate a one-sentence description of what was taught
    - Format: `[Feature/Component] - [Key learning]`
    - Example: "Rate limiting middleware - Understanding fail-open vs fail-closed strategies"
+   - **Categorize the change** based on the context of the lesson:
+     - `Frontend` — UI components, Svelte, React, styling, client-side logic
+     - `Backend` — API, server, database, authentication, middleware
+     - `Infrastructure` — Build tools, deployment, CI/CD, configuration
+     - `Testing` — Unit tests, integration tests, test infrastructure
+     - `Documentation` — README, guides, architectural decisions
+     - `Tooling` — Development tools, scripts, utilities
+     - Use the files modified and concepts discussed to determine the category
 
-2. **Append to docs/teacher-logs.md**
+2. **Update Table of Contents**
+   - Check if `docs/teacher-logs.md` has a Table of Contents section
+   - If no TOC exists, create one after the title with format:
+     ```markdown
+     # Teacher Session Logs
+     
+     ## Table of Contents
+     
+     - [YYYY-MM-DD HH:MM - Category - Summary](#yyyy-mm-dd-hhmm---category---summary)
+     
+     ---
+     ```
+   - If TOC exists, prepend a new entry at the beginning of the list (newest first)
+   - Use anchor links with lowercase, hyphenated format (spaces → `-`, special chars removed, slashes removed)
+   - Keep entries in reverse chronological order (newest first)
+
+3. **Append to docs/teacher-logs.md**
    - Use the `edit` tool to append the session to `docs/teacher-logs.md`
-   - If the file doesn't exist, create it first
+   - If the file doesn't exist, create it with title and TOC first
    - Include:
      - **Timestamp**: ISO format with date and time
+     - **Category**: Determined from context
      - **Summary**: One-sentence description
      - **Full Session**: Complete teaching content from all lenses
    - Separate entries with `---` dividers
 
-3. **Log format**
+4. **Log format**
    ```markdown
-   ## [YYYY-MM-DD HH:MM] Summary
+   # [YYYY-MM-DD HH:MM] [Category] Summary
    
-   [Full teaching session content]
+   **Timestamp:** YYYY-MM-DD HH:MM  
+   **Category:** [Frontend/Backend/Infrastructure/Testing/Documentation/Tooling]  
+   **Summary:** [One-sentence description]
+   
+   ---
+   
+   [Full teaching session content with all lenses]
    
    ---
    ```
 
 **Example log entry:**
 ```markdown
-## [2026-03-29 14:23] Rate limiting middleware - Understanding fail-open vs fail-closed strategies
+# [2026-03-29 14:23] [Backend] Rate limiting middleware - Understanding fail-open vs fail-closed strategies
 
-# Teaching Session: Rate Limiting Implementation
+**Timestamp:** 2026-03-29 14:23  
+**Category:** Backend  
+**Summary:** Understanding how to implement rate limiting middleware with Redis, including fail-open vs fail-closed strategies and their security implications
+
+---
+
+## Lens 1: The What
 
 [... full teaching content ...]
+
+---
+```
 
 ---
 ```
@@ -464,6 +514,7 @@ After delivering the teaching session, **automatically log it** to preserve the 
 ### DO:
 ✅ Use first and second person ("We chose X because...", "You'll want to know...")
 ✅ **Include code snippets liberally** — Show actual code when explaining decisions, concepts, and edge cases
+✅ **Add inline comments to code snippets** — Highlight key lines, explain non-obvious behavior, annotate flow and timing
 ✅ **Use visualizations strategically** — Add diagrams for flow/architecture, tables for comparisons, ASCII art for structure
 ✅ Flag things that surprised even you ("This is a subtle one...")
 ✅ Say when something is a trade-off with no clean answer
@@ -515,8 +566,13 @@ That's the difference between a codebase that feels foreign and one that feels l
 | [Decision 2] | [Rationale] | [Alternatives] |
 
 **Code showing the decision:**
-```language
-[relevant code snippet]
+```typescript
+// Why we chose $props() (Svelte 5):
+let { items, handleConsider }: Props = $props();
+
+// Instead of this (old Svelte 4 pattern):
+export let items;         // No type inference
+export let handleConsider; // Requires manual typing
 ```
 
 [Explanation of why this code implements the decision]
@@ -527,8 +583,10 @@ ASSUMPTION: [...]
 RISK: [...]
 
 **Code showing the assumption:**
-```language
-[snippet that reveals the assumption]
+```typescript
+// Assumes context is available when component mounts
+const openDrawer = getContext<() => void>("openDrawer");
+// If context not set, openDrawer is undefined ← RISK
 ```
 
 EDGE CASE: [...]
@@ -536,8 +594,13 @@ EDGE CASE: [...]
 → Is this intentional? [...]
 
 **What happens in the code:**
-```language
-[snippet showing edge case handling or lack thereof]
+```typescript
+try {
+  await redis.incr(ipAddress);
+} catch (error) {
+  // Fails open - allows request through ← EDGE CASE
+  return next();
+}
 ```
 
 **Optional: Flowchart showing edge case paths:**
@@ -588,8 +651,13 @@ CONCEPT: [Name]
   Why it matters here: [...]
   
   **Code example:**
-  ```language
-  [snippet demonstrating the concept]
+  ```typescript
+  // Provider (parent) - sets up context
+  setContext("openDrawer", () => { drawerOpen = true });
+  
+  // Consumer (any descendant) - retrieves it
+  const openDrawer = getContext<() => void>("openDrawer");
+  // Now child can call openDrawer() without prop drilling
   ```
   
   [Explanation of how the snippet demonstrates the concept]
@@ -643,13 +711,22 @@ Before you move on:
    Where: [File and location]
    
    **Current code:**
-   ```language
-   [problematic snippet]
+   ```typescript
+   // Missing validation - anyone can delete!
+   async function deleteUser(userId: string) {
+     await db.users.delete(userId);
+   }
    ```
    
    **Suggested fix:**
-   ```language
-   [improved snippet]
+   ```typescript
+   // Now checks permissions first
+   async function deleteUser(userId: string, requesterId: string) {
+     if (!await canDelete(requesterId, userId)) {
+       throw new ForbiddenError();
+     }
+     await db.users.delete(userId);
+   }
    ```
 
 🟡 WORTH ADDRESSING: [If any]
